@@ -1,48 +1,76 @@
+import datetime
+
 from peewee import (
-    Model, CharField, IntegerField, ForeignKeyField,
+    Model, CharField, IntegerField, ForeignKeyField, BooleanField,
     DateTimeField, SqliteDatabase
 )
 
-db = SqliteDatabase('carto.db')
+
+class BaseModel(Model):
+    class Meta:
+        database = SqliteDatabase(None)  # defer until runtime
+
+    @staticmethod
+    def init_db(database, **connection_kwargs):
+        BaseModel._meta.database.init(database, **connection_kwargs)
 
 
 # classes to store a set of midi parameters and values used to generate a sound
-class MidiParamClass(Model):
+class MidiParamClass(BaseModel):
     # i.e. mfccs, chroma
     name = CharField
 
 
-class MidiParamType(Model):
+class MidiParamType(BaseModel):
     name = CharField()
     channel = IntegerField()
+    max_val = IntegerField()  # some controller params have different ranges, [0-max_val]
     feature_class = ForeignKeyField(MidiParamClass, default=None)
 
 
-class MidiSetting(Model):
-    date = DateTimeField()
+class Experiment(BaseModel):
+    datetime = DateTimeField(default=datetime.datetime.now)
+    description = CharField(default=None)
 
 
-class MidiParamSetting(Model):
+class ExperimentParam(BaseModel):
+    """ a mapping of the MidiParams that are enabled for a given
+    experiment
+    """
+    experiment = ForeignKeyField(Experiment)
+    midi_param_type = ForeignKeyField(MidiParamType)
+    enabled = BooleanField(default=False)
+
+    # when randomly selecting midi values, what is the smallest
+    # interval of values are we interested in 8 means (0, 7, 15, ...)
+    min_sample_interval = IntegerField()
+
+
+class MidiSetting(BaseModel):
+    pass
+
+
+class MidiParamSetting(BaseModel):
     midi_setting = ForeignKeyField(MidiSetting)
     midi_param_type = ForeignKeyField(MidiParamType)
     value = IntegerField()
 
 
-class AudioFeature(Model):
+class AudioFeature(BaseModel):
     name = CharField()
 
 
 # classes to store the resulting audio features of a given sound
-class AudioFeatureType(Model):
+class AudioFeatureType(BaseModel):
     name = CharField()
     # sample_rate = FloatField()
 
 
-class AudioFeatureResult(Model):
-    date = DateTimeField()
+class AudioFeatureResult(BaseModel):
+    datetime = DateTimeField(default=datetime.datetime.now)
 
 
-class AudioFeatureResultValue(Model):
+class AudioFeatureResultValue(BaseModel):
     audio_feature_result = ForeignKeyField(AudioFeatureResult)
     audio_feature_type = ForeignKeyField(AudioFeatureType)
     value = IntegerField()

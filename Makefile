@@ -4,3 +4,4 @@ lint :
 	flake8 cartography/
 
 test : lint
+	nosetests tests
