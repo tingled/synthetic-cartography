@@ -1,20 +1,31 @@
+from abc import ABCMeta, abstractmethod
 import os
 import yaml
 
-from cartography.models import (MidiParamClass, MidiParamType, Experiment)
+from models import Experiment
 
 
-class SqlExperimentHandler(object):
-    def __init__(self):
+class ExperimentHandler(object):
+    def __init__(self, config_file):
+        self.config_file = config_file
+
+    def load_config(self):
+        assert os.path.isfile(self.config_file), \
+            "config file {} not found".format(self.config_file)
+
+        self.config = yaml.load(open(self.config_file, 'r').read())
+
+
+class SqlExperimentHandler(ExperimentHandler):
+    def __init__(self, config_file):
+        super(SqlExperimentHandler, self).__init__(config_file)
         self.delegate = None
+        self.config = None
 
-    def create_from_config(self, config_file):
-        assert os.path.isfile(config_file), \
-            "config file {} not found".format(config_file)
-        config = yaml.load(open(config_file, 'r').read())
-        self.delegate = Experiment.create(description=config.get('description', ''))
+    def create_experiment(self):
+        self.delegate = Experiment.create(description=self.config.get('description', ''))
 
-    def load_existing(self, experiment_id):
+    def load_experiment(self, experiment_id):
         self.delegate = Experiment.get(Experiment.id == experiment_id)
 
 
@@ -41,10 +52,17 @@ class ParamFileLoader:
         }
 
 
+class ParamHandler:
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def active_params(self):
+        pass
+
+
 class SqlParamHandler:
-    def create_from_file(self, param_file):
-        for param in ParamFileLoader(param_file).load():
-            if 'param_class' in param:
-                param_class, _ = MidiParamClass.get_or_create(name=param['param_class'])
-                param['param_class'] = param_class
-            MidiParamType.get_or_create(**param)
+    def __init__(self, experiment_id):
+        self.experiment_id = experiment_id
+
+    def active_params(self):
+        pass
