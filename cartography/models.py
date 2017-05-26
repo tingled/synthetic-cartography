@@ -24,8 +24,8 @@ class MidiParamClass(BaseModel):
 class MidiParamType(BaseModel):
     name = CharField()
     channel = IntegerField()
-    max_val = IntegerField()  # some controller params have different ranges, [0-max_val]
-    feature_class = ForeignKeyField(MidiParamClass, default=None)
+    max_val = IntegerField(default=127)  # some controller params have different ranges, [0-max_val]
+    param_class = ForeignKeyField(MidiParamClass, default=None)
 
 
 class Experiment(BaseModel):
