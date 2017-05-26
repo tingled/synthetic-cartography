@@ -1,0 +1,4 @@
+channel	name	param class	max_val
+1	osc1 shape	osc1	
+2	osc1 wave select	osc1	63
+3	osc balance		

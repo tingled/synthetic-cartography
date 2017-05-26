@@ -7,7 +7,7 @@ from unittest import TestCase
 
 from cartography.models import Experiment
 from cartography.experiment import (
-    ExperimentHandler, SqlExperimentHandler
+    ExperimentHandler, SqlExperimentHandler, ParamFileLoader
 )
 test_db = SqliteDatabase(':memory:')
 
@@ -43,3 +43,21 @@ class TestSqlExperimentHandler(TestExperimentHandler):
             diff_dt = cur_dt - got_dt
             self.assertLess(abs(diff_dt.seconds), 3)
 
+
+class TestParamFileLoader(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.fixture_param_file = 'tests/fixtures/midi_params.tsv'
+        cls.expected_params = [
+                {'name': 'osc1 shape', 'channel': 1, 'param_class': 'osc1', 'max_val': None},
+                {'name': 'osc1 wave select', 'channel': 2, 'param_class': 'osc1', 'max_val': 63},
+                {'name': 'osc balance', 'channel': 3, 'param_class': None, 'max_val': None}
+        ]
+
+    def test_load(self):
+        param_loader = ParamFileLoader(self.fixture_param_file)
+        params = param_loader.load()
+
+        self.assertEqual(len(params), len(self.expected_params))
+        for i in range(len(self.expected_params)):
+            self.assertEqual(set(params[i].items()), set(self.expected_params[i].items()))

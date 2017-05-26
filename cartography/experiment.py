@@ -29,6 +29,29 @@ class SqlExperimentHandler(ExperimentHandler):
         self.delegate = Experiment.get(Experiment.id == experiment_id)
 
 
+class ParamFileLoader:
+    def __init__(self, param_file, delim='\t'):
+        self.param_file = param_file
+        self.delim = delim
+
+    def load(self):
+        params = []
+        with open(self.param_file) as fin:
+            fin.readline()  # reads column names
+            for line in fin:
+                params.append(self._parse_line(line))
+        return params
+
+    def _parse_line(self, line):
+        channel, name, param_class, max_val = line.strip('\n').split(self.delim)
+        return {
+            'name': name or None,
+            'param_class': param_class or None,
+            'channel': int(channel) if channel else None,
+            'max_val': int(max_val) if max_val else None
+        }
+
+
 class ParamHandler:
     __metaclass__ = ABCMeta
 
