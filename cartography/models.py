@@ -1,7 +1,7 @@
 import datetime
 
 from peewee import (
-    Model, CharField, IntegerField, ForeignKeyField, BooleanField,
+    Model, CharField, IntegerField, ForeignKeyField,
     FloatField, DateTimeField, SqliteDatabase
 )
 
@@ -39,11 +39,10 @@ class ExperimentParam(BaseModel):
     """
     experiment = ForeignKeyField(Experiment)
     midi_param_type = ForeignKeyField(MidiParamType)
-    enabled = BooleanField(default=False)
 
     # when randomly selecting midi values, what is the smallest
     # interval of values are we interested in 8 means (0, 7, 15, ...)
-    min_sample_interval = IntegerField()
+    sample_interval = IntegerField()
 
 
 class MidiSetting(BaseModel):
