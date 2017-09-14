@@ -2,7 +2,7 @@ import datetime
 
 from peewee import (
     Model, CharField, IntegerField, ForeignKeyField, BooleanField,
-    DateTimeField, SqliteDatabase
+    FloatField, DateTimeField, SqliteDatabase
 )
 
 
@@ -73,4 +73,4 @@ class AudioFeatureResult(BaseModel):
 class AudioFeatureResultValue(BaseModel):
     audio_feature_result = ForeignKeyField(AudioFeatureResult)
     audio_feature_type = ForeignKeyField(AudioFeatureType)
-    value = IntegerField()
+    value = FloatField()
