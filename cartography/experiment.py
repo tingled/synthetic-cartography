@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 import os
 import yaml
 
-from models import Experiment
+from cartography.models import Experiment
 
 
 class ExperimentHandler(object):
@@ -26,7 +26,8 @@ class SqlExperimentHandler(ExperimentHandler):
         self.delegate = Experiment.create(description=self.config.get('description', ''))
 
     def load_experiment(self, experiment_id):
-        self.delegate = Experiment.get(Experiment.id==experiment_id)
+        self.delegate = Experiment.get(Experiment.id == experiment_id)
+
 
 class ParamHandler:
     __metaclass__ = ABCMeta
