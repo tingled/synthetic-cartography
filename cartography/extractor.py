@@ -21,8 +21,8 @@ class LibrosaFeatureExtractor(FeatureExtractor):
 
     def _feature_to_function(self, feature):
         mapping = {
-                'mfcc': self._mfcc,
-                'chroma': self._chroma
+            'mfcc': self._mfcc,
+            'chroma': self._chroma
         }
         return mapping[feature]
 
@@ -33,16 +33,19 @@ class LibrosaFeatureExtractor(FeatureExtractor):
         y, sr = self.load(audio_path, **kwargs.get('load_kwargs', {}))
 
     def _mfcc(self, y, sr, **kwargs):
+        print(kwargs)
         S = librosa.feature.melspectrogram(y, sr=sr, n_mels=128)
         log_S = librosa.logamplitude(S, ref_power=np.max)
         mfcc = librosa.feature.mfcc(
-                S=log_S, n_mfcc=kwargs.get('num_mfccs', self.DefaultNumMfcc))
+            S=log_S, n_mfcc=kwargs.get('num_mfccs', self.DefaultNumMfcc))
         output = mfcc.copy()
 
         if kwargs.get('delta_mfccs', self.DefaultDeltaMfcc):
-                output.concat(librosa.feature.delta(mfcc))
+            output = np.concatenate(
+                    (output, librosa.feature.delta(mfcc)), axis=0)
         if kwargs.get('delta2_mfccs', self.DefaultDelta2Mfcc):
-                output.concat(librosa.feature.delta(mfcc, order=2))
+            output = np.concatenate(
+                    (output, librosa.feature.delta(mfcc, order=2)), axis=0)
 
         return output
 
