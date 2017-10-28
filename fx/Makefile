@@ -11,7 +11,7 @@ build-container : guard-DOCKER_IMG
 lint :
 	flake8 feature_extraction tests
 
-test : lint
+test : lint guard-DOCKER_IMG
 	docker run --rm -i -v ${PWD}:/home -w /home $(DOCKER_IMG) nosetests tests
 
 all : build-container test
