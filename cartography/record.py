@@ -11,19 +11,22 @@ class Recorder:
         self.sr = sr
         self.channels = channels
         self.pa = pyaudio.PyAudio()
+        self.frames = None
 
-    def start_record(self, dur):
+    def _get_callback(self):
         def cb(input_data, frame_cnt, time_info, status_flags):
-            if time_info['input_buffer_adc_time'] > (device_time + dur):
-                return (None, pyaudio.paComplete)
-            frame_queue.push(input_data)
+            self.frame_queue.push(input_data)
             return (None, pyaudio.paContinue)
-        
+        return cb
+
+    def start_record(self):
         self.stream = self.pa.open(
                 format=self.format,
                 channels=self.channels,
                 input=True,
                 frames_per_buffer=chunk_size)
+
+    def stop_record(self):
         unpacker = struct.Struct('f' * self.chunk_size)
 
         output += unpacker.unpack(input_data)
