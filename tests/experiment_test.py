@@ -1,6 +1,6 @@
 import os
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from peewee import SqliteDatabase
 from playhouse.test_utils import test_database
 from unittest import TestCase
@@ -18,6 +18,7 @@ class TestSqlExperimentHandler(TestCase):
         fixture_dir = 'tests/fixtures/'
         cls.config_file = os.path.join(fixture_dir, 'experiment_config.yaml')
         cls.config_data = {'description': 'test experiment'}
+
 
     def test_create_from_config(self):
         with test_database(test_db, (Experiment,)):

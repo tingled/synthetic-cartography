@@ -1,7 +1,7 @@
 import os
 import yaml
 
-from cartography.models import (MidiParamClass, MidiParamType, Experiment)
+from .models import (MidiParamClass, MidiParamType, Experiment)
 
 
 class SqlExperimentHandler(object):
