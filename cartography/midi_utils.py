@@ -13,7 +13,7 @@ def get_steinberg_device_name():
 
 
 def open_steinberg_output():
-    return mido.open_output(get_steinberg_device_name())
+    return mido.open_output(get_steinberg_device_name(), autoreset=True)
 
 
 def open_steinberg_input():
