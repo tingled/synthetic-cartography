@@ -1,0 +1,20 @@
+name: virus
+channels:
+    - conda-forge
+    - pytorch
+dependencies:
+    - python>=3.7.0
+    - ipython
+    - jupyter
+    - librosa
+    - matplotlib
+    - nose
+    - numpy
+    - pandas
+    - pudb
+    - pysoundfile=0.10.2
+    - pytorch>=0.4.1
+    - scikit-learn
+    - scipy
+    - sox
+    - tqdm
