@@ -35,7 +35,7 @@ class LibrosaFeatureExtractor(FeatureExtractor):
     def _mfcc(self, y, sr, **kwargs):
         print(kwargs)
         S = librosa.feature.melspectrogram(y, sr=sr, n_mels=128)
-        log_S = librosa.logamplitude(S, ref_power=np.max)
+        log_S = librosa.amplitude_to_db(S, ref=np.max)
         mfcc = librosa.feature.mfcc(
             S=log_S, n_mfcc=kwargs.get('num_mfccs', self.DefaultNumMfcc))
         output = mfcc.copy()

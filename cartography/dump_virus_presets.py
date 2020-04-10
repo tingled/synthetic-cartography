@@ -3,8 +3,6 @@ the purpose of this script is to download the factory presets from the access
 virus via a midi sysex dump
 """
 import pandas as pd
-from time import sleep
-from queue import Queue
 
 from midi_utils import open_steinberg_input
 from virus_utils import parse_virus_preset_dump

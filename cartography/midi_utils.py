@@ -8,7 +8,7 @@ def open_output():
 def get_steinberg_device_name():
     output_names = [n for n in mido.get_output_names() if 'steinberg' in n.lower()]
     if len(output_names) != 1:
-        raise Exception(f"Found the following steinberg MIDI devices: {output_names}. Expected only one")
+        raise Exception(f"Found the following steinberg MIDI devices: {output_names}. Expected only one")  # noqa
     return output_names[0]
 
 
