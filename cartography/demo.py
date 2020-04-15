@@ -1,9 +1,12 @@
-import numpy as np
-
+import librosa
+import librosa.display
+from matplotlib import pyplot as plt
 from mido import Message
+import numpy as np
 from random import randint
 from time import sleep
 
+from record import Recorder
 from midi_utils import open_steinberg_output
 from virus_utils import VirusPresetGenerator, create_virus_preset_msg
 
@@ -28,8 +31,8 @@ def trigger_note_msgs(note=NOTE, time=3, chan=0):
 def demo_control():
     outport = open_steinberg_output()
     msgs = []
-    msgs.append(Message('note_on', note=NOTE, time=1))
-    msgs.append(Message('note_off', note=NOTE, time=0.5))
+    msgs.append(Message('note_on', note=NOTE, time=2))
+    msgs.append(Message('note_off', note=NOTE, time=2))
 
     repeat = 10
 
@@ -51,7 +54,7 @@ def demo_preset_gen():
     on_msg, off_msg = trigger_note_msgs(time=t)
 
     for i in range(5):
-        data = preset_generator.generate_preset_from_seed(139)
+        data = preset_generator.generate_preset_from_seed(80)
         ctrl_msg = create_virus_preset_msg(data)
         outport.send(ctrl_msg)
         print(f"on:\t{on_msg}")
@@ -62,5 +65,27 @@ def demo_preset_gen():
         sleep(t)
 
 
+def demo_record():
+    outport = open_steinberg_output()
+    r = Recorder()
+    t = 2
+    on_msg, off_msg = trigger_note_msgs(time=t)
+
+    r.start_record()
+    outport.send(on_msg)
+    sleep(t)
+    outport.send(off_msg)
+    sleep(t)
+    r.stop_record()
+    sig = r.read_queue()
+    # plt.plot(sig[:5000])
+    S = librosa.feature.melspectrogram(y=sig, sr=r.sr)
+    S_dB = librosa.power_to_db(S, ref=np.max)
+    librosa.display.specshow(S_dB, sr=r.sr)
+    plt.show()
+
+
 if __name__ == '__main__':
+    # demo_record()
+    # demo_control()
     demo_preset_gen()
