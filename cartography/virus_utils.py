@@ -16,7 +16,7 @@ from numpy import ndarray
 import pandas as pd
 from pandas import DataFrame
 import random
-from typing import Callable, List
+from typing import Callable, List, Optional, Dict
 
 VIRUS_SYSEX_HEADER = [0, 32, 51, 1, 0, 16, 0, 127]
 VIRUS_SYSEX_CHECKSUM = [0]  # this value seems to be ignored on write
@@ -42,36 +42,60 @@ def create_virus_patch_msg(params: list) -> Message:
 
 
 class VirusPresetGenerator:
+    DefaultOverrideParams = {
+            64: 0,  # hold pedal
+            91: 127,  # patch volume
+            93: 65,  # transpose
+            105: 0,  # chorus mix
+            108: 0,  # chorus delay
+            112: 0,  # delay / reverb mode
+            113: 0,  # effect send
+            241: 33,  # title string, val 33 = "!"
+            242: 33,  # title string, val 33 = "!"
+            243: 33,  # title string, val 33 = "!"
+            244: 33,  # title string, val 33 = "!"
+            245: 33,  # title string, val 33 = "!"
+            246: 33,  # title string, val 33 = "!"
+            247: 33,  # title string, val 33 = "!"
+            248: 33,  # title string, val 33 = "!"
+            249: 33,  # title string, val 33 = "!"
+            250: 33,  # title string, val 33 = "!"
+    }
+
     def __init__(
         self,
         preset_path: str = None,
         preset_data: DataFrame = None,
-        uniq_val_thresh: int = 10
+        uniq_val_thresh: int = 10,
+        override_params: Optional[Dict[int, int]] = None,
     ):
         """
         either a path to a csv file or a dataframe must be passed in
+
+        :arg preset_path:
+        :arg preset_data:
+        :arg uniq_val_thresh: min number of unique values observed for a given
+            parameter to use a triangular distribution. if fewer unique
+            values are observed, use categorical distribution
+        :arg override_params: optional map indicating which parameters
+            should be set to default values
         """
         assert (preset_path is not None) or (preset_data is not None)
         if preset_data is None:
             preset_data = self.load_presets_from_csv(preset_path)
         self.preset_data = preset_data
         self.distributions = self.create_distributions(preset_data, uniq_val_thresh)
-        self.override_params()
 
-    def override_params(self):
-        self.overrides = {
-                64: 0,  # hold pedal
-                91: 127,  # patch volume
-                93: 65,  # transpose
-                105: 0,  # chorus mix
-                108: 0,  # chorus delay
-                112: 0,  # delay / reverb mode
-                113: 0,  # effect send
-        }
-        for i in range(241, 251):  # 241-250 control the title string
-            self.overrides[i] = 33
+        self.override_params = self.DefaultOverrideParams if override_params is None else override_params  # noqa
 
-        for idx, val in self.overrides.items():
+        self.override_distributions()
+
+    def override_distributions(self) -> None:
+        """
+        modifies previously created distributions s.t. overridden
+        parameters return the proper default value
+        """
+        for idx, val in self.override_params.items():
             def f(v=val):
                 return v
             self.distributions[idx] = f

@@ -65,16 +65,23 @@ class TestVirusPresetGenerator(TestCase):
             {
                 'param1': [0, 0, 0],
                 'param2': [100, 112, 123],
+                'param3': [1, 2, 8],
             })
         n = 100
 
-        gen = VirusPresetGenerator(preset_data=preset_data, uniq_val_thresh=3)
+        override_params = {2: 3}
+
+        gen = VirusPresetGenerator(
+                preset_data=preset_data,
+                uniq_val_thresh=3,
+                override_params=override_params)
 
         samples = []
         for i in range(n):
             patch = gen.generate_patch()
-            self.assertEqual(len(patch), 2)
-            self.assertEqual(patch[0], 0)
+            self.assertEqual(len(patch), 3)
+            self.assertEqual(patch[0], 0)  # uses categorical
+            self.assertEqual(patch[2], 3)  # overridden param
             samples.append(patch[1])
 
         self.assertGreater(np.array(samples).mean(), 64)
