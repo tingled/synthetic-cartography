@@ -1,6 +1,6 @@
 """
-the purpose of this script is to download the factory presets from the access
-virus via a midi sysex dump
+the purpose of this script is to download the factory preset patches
+from the access virus via a midi sysex dump
 """
 import pandas as pd
 

@@ -24,14 +24,14 @@ VIRUS_SYSEX_CHECKSUM = [0]  # this value seems to be ignored on write
 
 def parse_virus_preset_dump(msg: Message) -> List[int]:
     """
-    strips sysex header and checksum bits to return list of presets
+    strips sysex header and checksum bits to return list of preset patches
     """
     data = list(msg.data[len(VIRUS_SYSEX_HEADER): -len(VIRUS_SYSEX_CHECKSUM)])
     assert len(data) == 256
     return data
 
 
-def create_virus_preset_msg(params: list) -> Message:
+def create_virus_patch_msg(params: list) -> Message:
     """
     takes a list of 256 parameter values and creates a Mido sysex message
     to update the virus
@@ -107,7 +107,7 @@ class VirusPresetGenerator:
         """
         a large number of Virus parameter values are either categorical
         (eg LFO shape) or have an unusual distribution in the factory
-        presets. for these parameters, we want to sample from the
+        preset patches. for these parameters, we want to sample from the
         observed probabilites of each value in the factory presets
 
         :arg preset_vals: parameter values observed in factory presets. this is the distribution
@@ -168,12 +168,12 @@ class VirusPresetGenerator:
                 distributions.append(self._create_triangular_dist(preset_vals))
         return distributions
 
-    def generate_preset(self) -> List[int]:
+    def generate_patch(self) -> List[int]:
         return [d() for d in self.distributions]
 
-    def generate_preset_from_seed(self, seed_id: int, n_diff_params: int = 25):
+    def generate_patch_from_seed(self, seed_id: int, n_diff_params: int = 25):
         """
-        creates a new preset based on a stored preset.
+        creates a new patch based on a stored preset.
 
         :arg seed_id: id of saved preset (max 255)
         :arg n_diff_params: number of params to randomly vary
