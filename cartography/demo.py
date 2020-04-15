@@ -7,6 +7,9 @@ from time import sleep
 from midi_utils import open_steinberg_output
 
 
+NOTE = 49
+
+
 def rand_pitch():
     outport = open_steinberg_output()
     for i in range(20):
@@ -16,7 +19,7 @@ def rand_pitch():
         outport.send(Message('note_off', note=pitch))
 
 
-def trigger_note_msgs(note=50, time=1, chan=0):
+def trigger_note_msgs(note=NOTE, time=3, chan=0):
     return [Message('note_on', note=note, time=time, channel=chan),
             Message('note_off', note=note, time=time, channel=chan)]
 
@@ -24,8 +27,8 @@ def trigger_note_msgs(note=50, time=1, chan=0):
 def demo_control():
     outport = open_steinberg_output()
     msgs = []
-    msgs.append(Message('note_on', note=50, time=1))
-    msgs.append(Message('note_off', note=50, time=0.5))
+    msgs.append(Message('note_on', note=NOTE, time=1))
+    msgs.append(Message('note_off', note=NOTE, time=0.5))
 
     repeat = 10
 
