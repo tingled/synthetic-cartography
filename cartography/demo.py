@@ -1,12 +1,18 @@
 import numpy as np
 
-from mido import open_output, Message
+from mido import Message
 from random import randint
 from time import sleep
 
+from midi_utils import open_steinberg_output
+from virus_utils import VirusPresetGenerator, create_virus_preset_msg
+
+
+NOTE = 49
+
 
 def rand_pitch():
-    outport = open_output()
+    outport = open_steinberg_output()
     for i in range(20):
         pitch = randint(10, 60)
         outport.send(Message('note_on', note=pitch))
@@ -14,17 +20,16 @@ def rand_pitch():
         outport.send(Message('note_off', note=pitch))
 
 
-def trigger_note_msgs(note=50, time=1, chan=0):
+def trigger_note_msgs(note=NOTE, time=3, chan=0):
     return [Message('note_on', note=note, time=time, channel=chan),
             Message('note_off', note=note, time=time, channel=chan)]
 
 
-
 def demo_control():
-    outport = open_output()
+    outport = open_steinberg_output()
     msgs = []
-    msgs.append(Message('note_on', note=50, time=1))
-    msgs.append(Message('note_off', note=50, time=0.5))
+    msgs.append(Message('note_on', note=NOTE, time=1))
+    msgs.append(Message('note_off', note=NOTE, time=0.5))
 
     repeat = 10
 
@@ -36,13 +41,26 @@ def demo_control():
             sleep(msg.time)
 
 
-if __name__ == '__main__':
-    outport = open_output()
-    for i in range(3):
-        t = 1
-        on_msg, off_msg = trigger_note_msgs(time=t)
+def demo_preset_gen():
+    outport = open_steinberg_output()
+
+    presets_file = 'data/virus_presets.csv'
+    preset_generator = VirusPresetGenerator(presets_file)
+
+    t = 2
+    on_msg, off_msg = trigger_note_msgs(time=t)
+
+    for i in range(5):
+        data = preset_generator.generate_preset_from_seed(139)
+        ctrl_msg = create_virus_preset_msg(data)
+        outport.send(ctrl_msg)
+        print(f"on:\t{on_msg}")
         outport.send(on_msg)
-        print(on_msg)
         sleep(t)
+        print(f"off:\t{off_msg}")
         outport.send(off_msg)
         sleep(t)
+
+
+if __name__ == '__main__':
+    demo_preset_gen()

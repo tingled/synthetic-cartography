@@ -6,5 +6,5 @@ lint :
 build :
 	docker build -t carto ./
 
-test : lint build
-	docker run -w /home -v $(CURDIR):/home carto nosetests tests
+test : lint
+	nosetests tests
