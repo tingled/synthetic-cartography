@@ -16,7 +16,7 @@ from numpy import ndarray
 import pandas as pd
 from pandas import DataFrame
 import random
-from typing import Callable, List
+from typing import Callable, List, Optional, Dict
 
 VIRUS_SYSEX_HEADER = [0, 32, 51, 1, 0, 16, 0, 127]
 VIRUS_SYSEX_CHECKSUM = [0]  # this value seems to be ignored on write
@@ -24,14 +24,14 @@ VIRUS_SYSEX_CHECKSUM = [0]  # this value seems to be ignored on write
 
 def parse_virus_preset_dump(msg: Message) -> List[int]:
     """
-    strips sysex header and checksum bits to return list of presets
+    strips sysex header and checksum bits to return list of preset patches
     """
     data = list(msg.data[len(VIRUS_SYSEX_HEADER): -len(VIRUS_SYSEX_CHECKSUM)])
     assert len(data) == 256
     return data
 
 
-def create_virus_preset_msg(params: list) -> Message:
+def create_virus_patch_msg(params: list) -> Message:
     """
     takes a list of 256 parameter values and creates a Mido sysex message
     to update the virus
@@ -42,36 +42,60 @@ def create_virus_preset_msg(params: list) -> Message:
 
 
 class VirusPresetGenerator:
+    DefaultOverrideParams = {
+            64: 0,  # hold pedal
+            91: 127,  # patch volume
+            93: 65,  # transpose
+            105: 0,  # chorus mix
+            108: 0,  # chorus delay
+            112: 0,  # delay / reverb mode
+            113: 0,  # effect send
+            241: 33,  # title string, val 33 = "!"
+            242: 33,  # title string, val 33 = "!"
+            243: 33,  # title string, val 33 = "!"
+            244: 33,  # title string, val 33 = "!"
+            245: 33,  # title string, val 33 = "!"
+            246: 33,  # title string, val 33 = "!"
+            247: 33,  # title string, val 33 = "!"
+            248: 33,  # title string, val 33 = "!"
+            249: 33,  # title string, val 33 = "!"
+            250: 33,  # title string, val 33 = "!"
+    }
+
     def __init__(
         self,
         preset_path: str = None,
         preset_data: DataFrame = None,
-        uniq_val_thresh: int = 10
+        uniq_val_thresh: int = 10,
+        override_params: Optional[Dict[int, int]] = None,
     ):
         """
         either a path to a csv file or a dataframe must be passed in
+
+        :arg preset_path:
+        :arg preset_data:
+        :arg uniq_val_thresh: min number of unique values observed for a given
+            parameter to use a triangular distribution. if fewer unique
+            values are observed, use categorical distribution
+        :arg override_params: optional map indicating which parameters
+            should be set to default values
         """
         assert (preset_path is not None) or (preset_data is not None)
         if preset_data is None:
             preset_data = self.load_presets_from_csv(preset_path)
         self.preset_data = preset_data
         self.distributions = self.create_distributions(preset_data, uniq_val_thresh)
-        self.override_params()
 
-    def override_params(self):
-        self.overrides = {
-                64: 0,  # hold pedal
-                91: 127,  # patch volume
-                93: 65,  # transpose
-                105: 0,  # chorus mix
-                108: 0,  # chorus delay
-                112: 0,  # delay / reverb mode
-                113: 0,  # effect send
-        }
-        for i in range(241, 251):  # 241-250 control the title string
-            self.overrides[i] = 33
+        self.override_params = self.DefaultOverrideParams if override_params is None else override_params  # noqa
 
-        for idx, val in self.overrides.items():
+        self.override_distributions()
+
+    def override_distributions(self) -> None:
+        """
+        modifies previously created distributions s.t. overridden
+        parameters return the proper default value
+        """
+        for idx, val in self.override_params.items():
             def f(v=val):
                 return v
             self.distributions[idx] = f
@@ -107,7 +131,7 @@ class VirusPresetGenerator:
         """
         a large number of Virus parameter values are either categorical
         (eg LFO shape) or have an unusual distribution in the factory
-        presets. for these parameters, we want to sample from the
+        preset patches. for these parameters, we want to sample from the
         observed probabilites of each value in the factory presets
 
         :arg preset_vals: parameter values observed in factory presets. this is the distribution
@@ -168,12 +192,12 @@ class VirusPresetGenerator:
                 distributions.append(self._create_triangular_dist(preset_vals))
         return distributions
 
-    def generate_preset(self) -> List[int]:
+    def generate_patch(self) -> List[int]:
         return [d() for d in self.distributions]
 
-    def generate_preset_from_seed(self, seed_id: int, n_diff_params: int = 25):
+    def generate_patch_from_seed(self, seed_id: int, n_diff_params: int = 25):
         """
-        creates a new preset based on a stored preset.
+        creates a new patch based on a stored preset.
 
         :arg seed_id: id of saved preset (max 255)
         :arg n_diff_params: number of params to randomly vary

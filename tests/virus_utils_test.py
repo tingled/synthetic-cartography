@@ -38,7 +38,6 @@ class TestVirusPresetGenerator(TestCase):
         got = VirusPresetGenerator._create_categorical_dist(
                 preset_vals=preset_vals, min_val=min_val, max_val=max_val)()
 
-
         self.assertIsInstance(got, np.int64)
         self.assertEqual(got, expected)
 
@@ -61,21 +60,28 @@ class TestVirusPresetGenerator(TestCase):
         # mean of samples should be less than 5
         self.assertLess(np.array(samples).mean(), 5)
 
-    def test_generate_preset(self):
+    def test_generate_patch(self):
         preset_data = pd.DataFrame(
             {
                 'param1': [0, 0, 0],
                 'param2': [100, 112, 123],
+                'param3': [1, 2, 8],
             })
         n = 100
 
-        gen = VirusPresetGenerator(preset_data=preset_data, uniq_val_thresh=3)
+        override_params = {2: 3}
+
+        gen = VirusPresetGenerator(
+                preset_data=preset_data,
+                uniq_val_thresh=3,
+                override_params=override_params)
 
         samples = []
         for i in range(n):
-            preset = gen.generate_preset()
-            self.assertEqual(len(preset), 2)
-            self.assertEqual(preset[0], 0)
-            samples.append(preset[1])
+            patch = gen.generate_patch()
+            self.assertEqual(len(patch), 3)
+            self.assertEqual(patch[0], 0)  # uses categorical
+            self.assertEqual(patch[2], 3)  # overridden param
+            samples.append(patch[1])
 
         self.assertGreater(np.array(samples).mean(), 64)
