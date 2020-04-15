@@ -5,6 +5,7 @@ from random import randint
 from time import sleep
 
 from midi_utils import open_steinberg_output
+from virus_utils import VirusPresetGenerator, create_virus_preset_msg
 
 
 NOTE = 49
@@ -40,13 +41,26 @@ def demo_control():
             sleep(msg.time)
 
 
-if __name__ == '__main__':
+def demo_preset_gen():
     outport = open_steinberg_output()
-    for i in range(3):
-        t = 1
-        on_msg, off_msg = trigger_note_msgs(time=t)
+
+    presets_file = 'data/virus_presets.csv'
+    preset_generator = VirusPresetGenerator(presets_file)
+
+    t = 2
+    on_msg, off_msg = trigger_note_msgs(time=t)
+
+    for i in range(5):
+        data = preset_generator.generate_preset_from_seed(139)
+        ctrl_msg = create_virus_preset_msg(data)
+        outport.send(ctrl_msg)
+        print(f"on:\t{on_msg}")
         outport.send(on_msg)
-        print(on_msg)
         sleep(t)
+        print(f"off:\t{off_msg}")
         outport.send(off_msg)
         sleep(t)
+
+
+if __name__ == '__main__':
+    demo_preset_gen()
