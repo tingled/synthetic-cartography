@@ -20,7 +20,6 @@ from typing import Callable, List
 
 VIRUS_SYSEX_HEADER = [0, 32, 51, 1, 0, 16, 0, 127]
 VIRUS_SYSEX_CHECKSUM = [0]  # this value seems to be ignored on write
-# 241-250 control the title string
 
 
 def parse_virus_preset_dump(msg: Message) -> List[int]:
@@ -57,9 +56,30 @@ class VirusPresetGenerator:
             preset_data = self.load_presets_from_csv(preset_path)
         self.preset_data = preset_data
         self.distributions = self.create_distributions(preset_data, uniq_val_thresh)
+        self.override_params()
+
+    def override_params(self):
+        self.overrides = {
+                64: 0,  # hold pedal
+                91: 127,  # patch volume
+                93: 65,  # transpose
+                105: 0,  # chorus mix
+                108: 0,  # chorus delay
+                112: 0,  # delay / reverb mode
+                113: 0,  # effect send
+        }
+        for i in range(241, 251):  # 241-250 control the title string
+            self.overrides[i] = 33
+
+        for idx, val in self.overrides.items():
+            def f(v=val):
+                return v
+            self.distributions[idx] = f
 
     def load_presets_from_csv(self, preset_path: str) -> DataFrame:
-        return pd.read_csv(preset_path)
+        df = pd.read_csv(preset_path)
+        df.columns = map(int, df.columns)
+        return df
 
     @staticmethod
     def _create_categorical_probs(
@@ -162,6 +182,11 @@ class VirusPresetGenerator:
         data = list(self.preset_data.loc[seed_id])
         n_total_params = self.preset_data.shape[1]
         params_to_change = random.sample(range(n_total_params), n_diff_params)
+
         for param_id in params_to_change:
             data[param_id] = self.distributions[param_id]()
+
+        for param_id, val in self.overrides.items():
+            data[param_id] = val
+
         return data

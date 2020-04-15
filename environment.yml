@@ -12,6 +12,7 @@ dependencies:
     - numpy
     - pandas
     - pudb
+    - pyaudio
     - pysoundfile=0.10.2
     - pytorch>=0.4.1
     - scikit-learn
