@@ -1,7 +1,7 @@
 .PHONY : lint test build
 
 lint :
-	flake8 cartography/
+	flake8 cartography/ tests/
 
 build :
 	docker build -t carto ./
