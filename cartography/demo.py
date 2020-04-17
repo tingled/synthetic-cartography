@@ -6,9 +6,9 @@ import numpy as np
 from random import randint
 from time import sleep
 
-from record import Recorder
-from midi_utils import open_steinberg_output
-from virus_utils import VirusPresetGenerator, create_virus_preset_msg
+from .record import Recorder
+from .midi_utils import open_steinberg_output, trigger_note_msgs
+from .virus_utils import VirusPresetGenerator, create_virus_patch_msg
 
 
 NOTE = 49

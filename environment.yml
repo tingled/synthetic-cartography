@@ -8,6 +8,7 @@ dependencies:
     - jupyter
     - librosa
     - matplotlib
+    - mypy
     - nose
     - numpy
     - pandas

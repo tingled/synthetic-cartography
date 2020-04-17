@@ -64,8 +64,8 @@ class VirusPresetGenerator:
 
     def __init__(
         self,
-        preset_path: str = None,
-        preset_data: DataFrame = None,
+        preset_path: Optional[str] = None,
+        preset_data: Optional[DataFrame] = None,
         uniq_val_thresh: int = 10,
         override_params: Optional[Dict[int, int]] = None,
     ):
@@ -80,8 +80,8 @@ class VirusPresetGenerator:
         :arg override_params: optional map indicating which parameters
             should be set to default values
         """
-        assert (preset_path is not None) or (preset_data is not None)
         if preset_data is None:
+            assert preset_path is not None
             preset_data = self.load_presets_from_csv(preset_path)
         self.preset_data = preset_data
         self.distributions = self.create_distributions(preset_data, uniq_val_thresh)
@@ -119,8 +119,8 @@ class VirusPresetGenerator:
         :arg max_val: largest possible value
         """
         counts = dict(zip(*np.unique(preset_vals, return_counts=True)))
-        counts = np.array([counts.get(i, 0) for i in range(min_val, max_val+1)])
-        return counts / counts.sum()
+        count_array = np.array([counts.get(i, 0) for i in range(min_val, max_val+1)])
+        return count_array / count_array.sum()
 
     @staticmethod
     def _create_categorical_dist(
@@ -205,7 +205,9 @@ class VirusPresetGenerator:
         assert seed_id < self.preset_data.shape[0]
         data = list(self.preset_data.loc[seed_id])
         n_total_params = self.preset_data.shape[1]
-        params_to_change = random.sample(range(n_total_params), n_diff_params)
+
+        valid_params = set(range(n_total_params)).difference(set(self.override_params.keys()))
+        params_to_change = random.sample(valid_params, n_rand_params)
 
         for param_id in params_to_change:
             data[param_id] = self.distributions[param_id]()
