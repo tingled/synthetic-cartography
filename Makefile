@@ -1,10 +1,13 @@
 .PHONY : lint test build
 
 lint :
-	flake8 cartography/ tests/
+	flake8 cartography/ tests/ bin/
+
+type-check:
+	mypy cartography/ tests/ bin
 
 build :
 	docker build -t carto ./
 
-test : lint
+test : lint type-check
 	nosetests tests

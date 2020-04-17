@@ -4,8 +4,8 @@ from the access virus via a midi sysex dump
 """
 import pandas as pd
 
-from midi_utils import open_steinberg_input
-from virus_utils import parse_virus_preset_dump
+from .midi_utils import open_steinberg_input
+from .virus_utils import parse_virus_preset_dump
 
 
 input_port = open_steinberg_input()
